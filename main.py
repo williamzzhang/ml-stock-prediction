@@ -1,3 +1,4 @@
+from matplotlib.pyplot import text
 import streamlit as st 
 from datetime import date
 
@@ -6,8 +7,8 @@ from prophet import Prophet
 from prophet.plot import plot_plotly
 from plotly import graph_objs as go
 
-
-START = "2015-01-01"
+# Creating dashboard elements and initializing variables for data loading
+START = "2017-01-01"
 TODAY = date.today().strftime("%Y-%m-%d")
 
 st.title("Stock Prediction App")
@@ -18,6 +19,7 @@ selected_stock = st.selectbox("Select dataset for prediction", stocks)
 n_years = st.slider("Years of prediction:", 1, 5)
 period = n_years * 365
 
+# Data loading and caching
 @st.cache
 def load_data(ticker):
     data = yf.download(ticker, START, TODAY)
@@ -29,4 +31,23 @@ data = load_data(selected_stock)
 data_load_state.text("Data loaded!")
 
 st.subheader('Raw data')
-st.write(data)
+st.write(data.tail())
+
+# Plotting adjustable time series
+def plot_raw_data():
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data['Date'], y=data['Open'], name='Opening Price'))
+    fig.add_trace(go.Scatter(x=data['Date'], y=data['Close'], name='Closing Price'))
+    fig.layout.update(title_text="Time Series Data (Adjust bottom slider to change time period)", xaxis_rangeslider_visible=True)
+    st.plotly_chart(fig)
+
+plot_raw_data()
+
+# # Forecasting using fbprophet
+# df_train = data['Date', 'Close']
+# df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
+
+# p = Prophet()
+# p.fit(df_train)
+# future = p.make_future_dataframe(periods=period)
+
