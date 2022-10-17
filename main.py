@@ -30,6 +30,8 @@ data_load_state = st.text("Loading data...")
 data = load_data(selected_stock)
 data_load_state.text("Data loaded!")
 
+data['Date'] = data['Date'].dt.tz_localize(None)
+
 st.subheader('Raw data')
 st.write(data.tail())
 
@@ -43,11 +45,22 @@ def plot_raw_data():
 
 plot_raw_data()
 
-# # Forecasting using fbprophet
-# df_train = data['Date', 'Close']
-# df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
+# Forecasting using fbprophet
+df_train = data[['Date', 'Close']]
+df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
 
-# p = Prophet()
-# p.fit(df_train)
-# future = p.make_future_dataframe(periods=period)
+p = Prophet()
+p.fit(df_train)
+future = p.make_future_dataframe(periods=period)
+forecast = p.predict(future)
 
+st.subheader('Forecast data')
+st.write(forecast.tail())
+
+st.write('Forecast data')
+fig1 = plot_plotly(p, forecast)
+st.plotly_chart(fig1)
+
+st.write('Forecast components')
+fig2 = p.plot_components(forecast)
+st.write(fig2)
