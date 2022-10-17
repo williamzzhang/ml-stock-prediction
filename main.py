@@ -11,16 +11,16 @@ from plotly import graph_objs as go
 START = "2017-01-01"
 TODAY = date.today().strftime("%Y-%m-%d")
 
-st.title("Stock Prediction App")
+st.title("Stock Prediction Prophet")
 
-stocks = ("AAPL", "GOOGL", "MSFT", "GME")
+stocks = ("AAPL", "GOOGL", "MSFT", "GME", "TSLA")
 selected_stock = st.selectbox("Select dataset for prediction", stocks)
 
 n_years = st.slider("Years of prediction:", 1, 5)
 period = n_years * 365
 
 # Data loading and caching
-@st.cache
+@st.cache(allow_output_mutation=True)
 def load_data(ticker):
     data = yf.download(ticker, START, TODAY)
     data.reset_index(inplace=True)
@@ -30,6 +30,7 @@ data_load_state = st.text("Loading data...")
 data = load_data(selected_stock)
 data_load_state.text("Data loaded!")
 
+# Stripping timezones as fbprophet requires no timezones before fitting
 data['Date'] = data['Date'].dt.tz_localize(None)
 
 st.subheader('Raw data')
